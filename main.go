@@ -6,42 +6,40 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 )
 
 func checkvaluetype (value any) (error) {
-    fmt.Println("Data Type: ")
-    typeofvalue := reflect.TypeOf(value)
-    switch typeofvalue.Kind() {
+    // printing data type
+    fmt.Println("Data Type: ", reflect.TypeOf(value).Kind())
+
+    switch reflect.TypeOf(value).Kind() {
     case reflect.Slice:
-        fmt.Println("array")
-        jsonarr, e := json.Marshal(value)
-        var arr []any
-        json.Unmarshal(jsonarr, &arr)
-        if e != nil {return e}
-        readArray(arr)
-    case reflect.Map: 
-        fmt.Println("JSON." )
-        fmt.Println("Iterating all its key-value pairs------")
+        arr, e := value.([]any)
+        if (e == false) {
+            return errors.New("Invalid JSON array")
+        }
+        for _, c := range arr {
+            e := checkvaluetype(c)
+            if (e != nil) {
+                return e
+            }
+        }
+    case reflect.Map:
+
+        // Here, we can directly convert value to map[string]interface{}
+        // but that way we will not be able to validate the json
         innerjsondata, e := json.Marshal(value)
         if e != nil {return e}
         readJSON(innerjsondata)
     default:
-        fmt.Println(reflect.TypeOf(value), "    value: ", value)
-    } 
+        // printing values 
+        fmt.Println("value: ", value)
+    }
     fmt.Println(".................................................")
 
-    return nil
-}
-
-func readArray(arr []any) (error){
-    // rf := reflect.TypeOf(arr[0]).Kind()
-    // fmt.Println("read arr called for ", rf, arr)
-    for i, c := range arr {
-        fmt.Println("Index", i)
-        checkvaluetype(c)
-    }
     return nil
 }
 
