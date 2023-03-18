@@ -6,7 +6,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"reflect"
 )
@@ -17,10 +16,13 @@ func checkvaluetype (value any) (error) {
 
     switch reflect.TypeOf(value).Kind() {
     case reflect.Slice:
-        arr, e := value.([]any)
-        if (e == false) {
-            return errors.New("Invalid JSON array")
+
+        var arr []interface{}
+        v := reflect.ValueOf(value)
+        for i := 0; i < v.Len(); i++ {
+            arr = append(arr, v.Index(i).Interface())
         }
+
         for _, c := range arr {
             e := checkvaluetype(c)
             if (e != nil) {
